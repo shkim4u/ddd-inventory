@@ -1,0 +1,8 @@
+{
+  "app": {
+    "id": "inv-001",
+    "productId": "prod-001",
+    "quantity": 2,
+    "price": 50000
+  }
+}

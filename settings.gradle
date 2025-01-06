@@ -1,0 +1,5 @@
+rootProject.name = 'inventory'
+include 'domain'
+include 'application'
+include 'infrastructure'
+include 'interface'

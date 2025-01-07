@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ddd-foundation
+  namespace: application
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ddd-foundation
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ddd-foundation
+    spec:
+      containers:
+      - name: ddd-foundation
+        image: ddd-foundation:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DATABASE_HOST
+          value: "mysql.database"
+        - name: DATABASE_PORT
+          value: "3306"
+        - name: DATABASE_USERNAME
+          value: "shopuser"
+        - name: DATABASE_PASSWORD
+          value: "shoppass"
+        - name: DATABASE_SCHEMA
+          value: "shop"
+        - name: PROFILE
+          value: "dev"
+#        - name: JAVA_OPTS
+#          value: "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}"
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1024Mi"
+
+

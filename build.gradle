@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.1' apply false
     id 'io.spring.dependency-management' version '1.1.7' apply false
+    id 'com.github.davidmc24.gradle.plugin.avro' version '1.3.0' apply false
 }
 
 allprojects {
@@ -34,8 +35,24 @@ subprojects {
 }
 
 project(':domain') {
+    apply plugin: 'com.github.davidmc24.gradle.plugin.avro'
+
+    tasks.register('submoduleUpdate', Exec) {
+        description 'Update git submodules for message-idl'
+        commandLine 'git', 'submodule', 'update', '--remote', '--recursive'
+    }
+
+    generateAvroJava {
+        dependsOn 'submoduleUpdate'
+        source("${rootProject.projectDir}/message-idl/avro")
+        outputDir = file("${projectDir}/src/main/java")
+    }
+
     dependencies {
+        // Spring Data JPA.
         implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        // Avro.
+        implementation "org.apache.avro:avro:1.11.0"
     }
 }
 
@@ -48,6 +65,10 @@ project(':application') {
 }
 
 project(':interface') {
+    ext {
+        set('springCloudVersion', "2024.0.0")
+    }
+
     bootJar {
         enabled = true
         archiveFileName = 'inventory.jar'
@@ -57,19 +78,38 @@ project(':interface') {
     dependencies {
         implementation project(':domain')
         implementation project(':application')
-//        implementation project(':infrastructure')
+        runtimeOnly project(':infrastructure')
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation 'org.springframework.boot:spring-boot-starter-validation'
-        developmentOnly 'org.springframework.boot:spring-boot-devtools'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        // Spring Cloud.
+        implementation 'org.springframework.cloud:spring-cloud-starter'
+        // Spring Cloud Stream and RabbitMQ.
+        // spring-cloud-starter-stream-rabbit = spring-cloud-stream-binder-rabbit + spring-cloud-stream
+        implementation 'org.springframework.cloud:spring-cloud-stream'
+        implementation 'org.springframework.cloud:spring-cloud-stream-binder-rabbit'
+        testImplementation 'org.springframework.cloud:spring-cloud-stream-test-support'
+        // Avro.
+        implementation "org.apache.avro:avro:1.11.0"
+        // MapStruct.
+        implementation 'org.mapstruct:mapstruct:1.5.2.Final'
+        annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.2.Final'
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        }
     }
 }
 
 project(':infrastructure') {
     dependencies {
         implementation project(':domain')
+        // Flyway.
         implementation 'org.flywaydb:flyway-core'
         implementation 'org.flywaydb:flyway-database-postgresql'
+        // PostgreSQL.
         runtimeOnly 'org.postgresql:postgresql'
     }
 }

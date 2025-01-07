@@ -18,6 +18,9 @@ spring:
       on-profile: common
   application:
     name: ddd-inventory
+  integration:
+    jmx:
+      enabled: false
   jpa:
 #    database: postgresql
     show-sql: true
@@ -33,6 +36,36 @@ spring:
   sql:
     init:
       mode: never
+  cloud:
+    function:
+      definition: orderEventsHandler    # Function Bean 이름
+    stream:
+      bindings:
+        orderEventsHandler-in-0:        # [Function Bean 이름]-in-0
+          destination: order.events
+          group: order.queue
+          binder: rabbit
+          content-type: application/avro
+#          consumer:
+#            use-native-decoding: true
+      binders:
+        rabbit:
+          type: rabbit
+          environment:
+            spring:
+              rabbitmq:
+                host: localhost
+                port: 5672
+                username: user
+                password: rabbitmq
+                virtual-host: /
+      rabbit:
+        bindings:
+          orderEventsHandler-in-0:
+            consumer:
+              bindQueue: true                # Queue 바인딩 활성화
+              declareExchange: false         # Exchange는 Producer가 생성하므로 false
+              durableSubscription: true      # 지속성 있는 구독 설정
 server:
   address: 0.0.0.0
   port: ${PORT:8080}
@@ -47,6 +80,8 @@ server:
 logging:
   level:
     root: INFO
+    org.springframework.amqp: DEBUG
+    org.springframework.rabbit: DEBUG
 ---
 spring:
   config:

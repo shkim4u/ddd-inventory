@@ -1,0 +1,9 @@
+# Create namespace manifest for MySQL.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: application
+  labels:
+    name: application
+    app: ddd-foundation
+    purpose: modernization

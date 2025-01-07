@@ -1,0 +1,4 @@
+[submodule "message-idl/avro"]
+	path = message-idl/avro
+	url = https://github.com/shkim4u/ddd-avro-schemas.git
+	branch = main

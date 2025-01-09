@@ -46,8 +46,6 @@ spring:
           group: order.queue
           binder: rabbit
           content-type: application/avro
-#          consumer:
-#            use-native-decoding: true
       binders:
         rabbit:
           type: rabbit
@@ -100,3 +98,34 @@ spring:
       connection-test-query: SELECT 1
       maximum-pool-size: 50
       minimum-idle: 50
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  flyway:
+    url: jdbc:postgresql://postgresql.postgresql:5432/inventory
+    user: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+  datasource:
+    url: jdbc:postgresql://${DATABASE_HOST:postgresql.postgresql}:5432/inventory
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-test-query: SELECT 1
+      maximum-pool-size: 50
+      minimum-idle: 50
+  cloud:
+    stream:
+      binders:
+        rabbit:
+          type: rabbit
+          environment:
+            spring:
+              rabbitmq:
+                host: ${RABBITMQ_HOST:rabbitmq.rabbitmq}
+                port: ${RABBITMQ_PORT:5672}
+                username: ${RABBITMQ_USERNAME:user}
+                password: ${RABBITMQ_PASSWORD:rabbitmq}
+                virtual-host: /

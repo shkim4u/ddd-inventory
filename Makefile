@@ -51,11 +51,12 @@ install-tools:
 	@echo "Installing yq..."
 	@brew install yq
 
-helm-add-repo-bitnami:
+helm-add-repos:
 	@helm repo add bitnami https://charts.bitnami.com/bitnami
+	@helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 	@helm repo update
 
-install-database-k8s: install-tools helm-add-repo-bitnami
+install-database-k8s:
 	@rm -rf postgresql || true
 	@echo "Fetching the PostgreSQL Helm chart..."
 	@helm fetch bitnami/postgresql --untar
@@ -83,7 +84,7 @@ helm-install-fetched-postgresql:
 run-local-rabbitmq:
 	@docker run --rm -d --name rabbitmq -e RABBITMQ_DEFAULT_USER=user -e RABBITMQ_DEFAULT_PASS=rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:management
 
-install-rabbitmq-k8s: install-tools helm-add-repo-bitnami
+install-rabbitmq-k8s:
 	@rm -rf rabbitmq || true
 	@echo "Fetching the RabbitMQ Helm chart..."
 	@helm fetch bitnami/rabbitmq --untar
@@ -137,3 +138,26 @@ configure-rabbitmq-exchange-queue:
 	@rabbitmq/rabbitmqadmin -u user -p rabbitmq declare queue name=order.queue durable=true
 	@echo "Binding the queue to the exchange with the routing key '#'..."
 	@rabbitmq/rabbitmqadmin -u user -p rabbitmq declare binding source=order.events destination=order.queue routing_key=#
+
+build:
+	@echo "Building the application..."
+	@./gradlew clean build --no-daemon
+
+build-container-image:
+	@echo "Building the Docker container image..."
+	@docker build -t ddd-inventory:latest .
+
+load-container-image:
+	@echo "Loading the Inventory container image onto the Kind Kubernetes cluster..."
+	@kind load docker-image ddd-inventory:latest --name ddd-foundation
+
+deploy-application:
+	@echo "Deploying the Inventory application..."
+	@kubectl apply -f k8s/application/namespace.yaml
+	@kubectl apply -f k8s/application/deployment.yaml
+	@kubectl apply -f k8s/application/service.yaml
+
+undeploy-application:
+	@kubectl delete -f k8s/application/service.yaml
+	@kubectl delete -f k8s/application/deployment.yaml
+	@kubectl delete -f k8s/application/namespace.yaml

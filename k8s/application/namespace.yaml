@@ -2,8 +2,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: application
+  name: inventory
   labels:
-    name: application
-    app: ddd-foundation
+    name: inventory
     purpose: modernization

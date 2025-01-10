@@ -98,6 +98,9 @@ spring:
       connection-test-query: SELECT 1
       maximum-pool-size: 50
       minimum-idle: 50
+logging.level.org.springframework.web: TRACE
+logging.level.org.springframework.web.servlet: TRACE
+logging.level.org.springframework.web.servlet.mvc.method.annotation: TRACE
 ---
 spring:
   config:

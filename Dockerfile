@@ -1,7 +1,8 @@
 FROM public.ecr.aws/docker/library/gradle:8.4.0-jdk21 AS build
 WORKDIR /app
 COPY . .
-RUN ./gradlew clean build -x :domain:generateAvroJava --no-daemon
+#RUN ./gradlew clean build -x :domain:generateAvroJava --no-daemon
+RUN  ./gradlew clean copyOasToSwagger -x :domain:generateAvroJava --no-daemon && ./gradlew bootJar -x test -x :domain:generateAvroJava --build-cache --no-daemon
 
 #FROM public.ecr.aws/amazoncorretto/amazoncorretto:21.0.5-al2023-headless
 FROM gcr.io/distroless/java21-debian12:latest

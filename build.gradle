@@ -1,8 +1,12 @@
+import com.epages.restdocs.apispec.gradle.OpenApi3Task
+import io.swagger.v3.oas.models.servers.Server
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.1' apply false
     id 'io.spring.dependency-management' version '1.1.7' apply false
     id 'com.github.davidmc24.gradle.plugin.avro' version '1.3.0' apply false
+    id 'com.epages.restdocs-api-spec' version '0.18.4' apply false     // Spring RestDocs + OpenAPI 3 (Swagger)
 }
 
 allprojects {
@@ -69,6 +73,7 @@ project(':application') {
 }
 
 project(':interface') {
+    apply plugin: 'com.epages.restdocs-api-spec'
     ext {
         set('springCloudVersion', "2024.0.0")
     }
@@ -78,6 +83,45 @@ project(':interface') {
         archiveFileName = 'inventory.jar'
     }
     jar.enabled = false
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+
+//    tasks.register('openapi3', OpenApi3Task) {
+//        servers = [
+//                [url: 'http://localhost:8080'],
+//                [url: 'http://OPENAPI3_URL_TO_REPLACE']
+//        ] as List<? extends Server>
+//        title = 'Inventory service API'
+//        description = 'Inventory service API description'
+//        version = '1.0.0'
+//        format = 'json'
+////        apiVersion = '1.0.0'  // Set the apiVersion property
+////        outputDirectory = layout.buildDirectory.file("/api-spec")  // Set the outputDirectory property
+////        outputFileNamePrefix = 'openapi3'  // Set the outputFileNamePrefix property
+//    }
+
+    openapi3 {
+        servers = [
+                { url = 'http://localhost:8080' },
+                { url = 'http://OPENAPI3_URL_TO_REPLACE' }
+        ]
+        title = 'Inventory service API'
+        description = 'Inventory service API description'
+        version = '1.0.0'
+        format = 'json'
+    }
+
+    tasks.register('copyOasToSwagger', Copy) {
+        doFirst {
+            delete 'src/main/resources/static/openapi3.json'
+        }
+//        from "${buildDir}/api-spec/openapi3.json"
+        from layout.buildDirectory.file("api-spec/openapi3.json")
+        into 'src/main/resources/static/.'
+        dependsOn 'openapi3'
+    }
 
     dependencies {
         implementation project(':domain')
@@ -98,6 +142,9 @@ project(':interface') {
         // MapStruct.
         implementation 'org.mapstruct:mapstruct:1.5.2.Final'
         annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.2.Final'
+        // Spring RestDocs + OpenAPI 3 (Swagger).
+        testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+        testImplementation 'com.epages:restdocs-api-spec-mockmvc:0.18.4'
     }
 
     dependencyManagement {

@@ -78,7 +78,7 @@ class InventoryControllerTest {
         // When.
         Mockito.when(inventoryQueryService.getInventory(productId)).thenReturn(inventoryView);
 
-        // Then.
+        // Then for Simple MockMvc.
 //        mockMvc.perform(
 //                get("/inventory/v1/{productId}", productId)
 //                .accept(MediaType.APPLICATION_JSON))
@@ -86,6 +86,7 @@ class InventoryControllerTest {
 //                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
 //                .andExpect(content().json("{\"app\":{\"id\":\"inv-001\",\"productId\":\"prod-001\",\"quantity\":2,\"price\":50000}}"));
 
+        // Then for RestDocs.
         mockMvc.perform(
                 RestDocumentationRequestBuilders.get("/inventory/v1/{productId}", productId)
                     .param("productId", productId)
@@ -100,9 +101,6 @@ class InventoryControllerTest {
                         pathParameters(
                                 parameterWithName("productId").description("상품 ID")
                         ),
-//                        queryParameters(
-//                                parameterWithName("productId").description("상품 ID")
-//                        ),
                         responseFields(
                                 fieldWithPath("app").description("응답 객체"),
                                 fieldWithPath("app.id").description("재고 ID"),

@@ -14,6 +14,8 @@
 ## **`Amazon VPC CNI`**
 ![](./docs/images/Amazon-VPC-CNI-Plugin.png)
 
+## **`RabbitMQ`를 통한 이벤트 기반 통신**
+![](./docs/images/RabbitMQ-Exchanges-Topic-Fanout-Direct.png)
 
 ---
 
